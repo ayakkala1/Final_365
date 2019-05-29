@@ -21,10 +21,10 @@ SELECT * FROM
 											(
                                             CASE
                                              WHEN  DATEDIFF(Checkin,CURDATE()) > 0  and CURDATE() < (SELECT MIN(Checkin) FROM lab7_reservations
-																																					WHERE
-																																					lab7_reservations.CheckOut >= CURDATE()
-																																					and lab7_reservations.Room = t.Room 
-																																				 ) THEN 0
+																																							WHERE
+																																								lab7_reservations.CheckOut >= CURDATE()
+																																								and lab7_reservations.Room = t.Room 
+																																						) THEN 0
 											ELSE 1
                                             END
                                             ) cases
