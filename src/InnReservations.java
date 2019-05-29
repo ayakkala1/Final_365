@@ -33,6 +33,9 @@ public class InnReservations {
         if (userInput.equals("Reserve a room")) {
             reserveARoom();
         }
+        else if (userInput.equals("Rooms and Rates")){
+            roomRates();
+        }
     }
 
     private void reserveARoom() {
@@ -65,6 +68,9 @@ public class InnReservations {
         System.out.println(numChildren);
         System.out.println(numAdults);
 
+    }
+    private void roomRates(){
+        return;
     }
 
     public static void main(String args[]) {

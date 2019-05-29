@@ -24,7 +24,7 @@ SELECT * FROM
 																																							WHERE
 																																								lab7_reservations.CheckOut >= CURDATE()
 																																								and lab7_reservations.Room = t.Room 
-																																						) THEN 0
+																																					) THEN 0
 											ELSE 1
                                             END
                                             ) cases
@@ -58,7 +58,7 @@ SELECT * FROM
 ) AS r23
 NATURAL JOIN
 (
-	SELECT Room,RoomName,
+	SELECT Room,Beds,bedType,maxOcc,basePrice,decor,
 		ROUND(
 			SUM(
 				CASE 
