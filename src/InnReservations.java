@@ -36,6 +36,9 @@ public class InnReservations {
         else if (userInput.equals("Rooms and Rates")){
             roomRates();
         }
+        else if (userInput.equals("Cancel a reservation")){
+            cancel();
+        }
     }
 
     private void reserveARoom() {
@@ -68,6 +71,32 @@ public class InnReservations {
         System.out.println(numChildren);
         System.out.println(numAdults);
 
+    }
+    private void cancel(){
+        try{
+        PreparedStatement pstmt = conn.prepareStatement("DELETE FROM lab7_reservations WHERE CODE = ?");
+        Scanner in = new Scanner(System.in);
+        System.out.println("Give the code for the reservation you wish to cancel: ");
+        Integer code = Integer.parseInt(in.next());
+        System.out.println("Are you sure you want to cancel this Reservation? (Yes | No)");
+        String answer = in.next();
+            if (answer.equals("Yes") | answer.equals("yes")) {
+                pstmt.setInt(1, code);
+                int rowCount = pstmt.executeUpdate();
+                if (rowCount == 0){
+                    System.out.println("Reservation is not found.");
+                }
+                else {
+                    System.out.println("Reservation has been cancelled.");
+                }
+            }
+            else{
+                System.out.println("Reservation remains.");
+            }
+        }
+        catch(Exception e){
+            System.out.println("An error as occurred.");
+        }
     }
     private void roomRates(){
         try {
