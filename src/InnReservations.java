@@ -103,6 +103,7 @@ public class InnReservations {
 
             String code = in.next();
             String line = in.nextLine();
+            String choices = "";
 
             boolean breakCase = false;
             while (counter <= 5) {
@@ -111,16 +112,29 @@ public class InnReservations {
                 }
                 switch (code) {
                     case "F":
-                        System.out.println(" Enter First Name (Wildcard Expressions are okay)");
-                        firstName = in.next();
-                        counter++;
-                        System.out.println(" Filter Saved. ");
+                        if(choices.indexOf("F") == -1) {
+                            System.out.println(" Enter First Name (Wildcard Expressions are okay)");
+                            firstName = in.next();
+                            counter++;
+                            choices = choices + code;
+                            System.out.println(" Filter Saved. ");
+                        }
+                        else{
+                            System.out.println("You already filtered on First Name.");
+                        }
                         break;
                     case "L":
-                        System.out.println(" Enter Last Name (Wildcard Expressions are okay)");
-                        lastName = in.next();
-                        counter++;
-                        System.out.println(" Filter Saved. ");
+                        if(choices.indexOf("L") == -1) {
+                            System.out.println(" Enter Last Name (Wildcard Expressions are okay)");
+                            lastName = in.next();
+                            counter++;
+                            choices = choices + code;
+
+                            System.out.println(" Filter Saved. ");
+                        }
+                        else{
+                            System.out.println("You already filtered on Last Name.");
+                        }
                         break;
                     case "D":
                         System.out.println(" Enter Start Date | Format: Year-Month-Day");
@@ -129,18 +143,42 @@ public class InnReservations {
                         endDate = valueOf(in.next());
                         System.out.println(" Filter Saved. ");
                         counter++;
+                        if(choices.indexOf("D") == -1) {
+                            System.out.println(" Enter Start Date | Format: Year-Month-Day");
+                            startDate = Date.valueOf(in.next());
+                            System.out.println(" Enter End Date | Format: Year-Month-Day");
+                            endDate = Date.valueOf(in.next());
+                            System.out.println(" Filter Saved. ");
+                            choices = choices + code;
+                            counter++;
+                        }
+                        else{
+                            System.out.println("You already filtered on Date.");
+                        }
                         break;
                     case "R":
-                        System.out.println(" Enter Room Code (Wildcard Expressions are okay)");
-                        roomCode = in.next();
-                        counter++;
-                        System.out.println(" Filter Saved. ");
+                        if(choices.indexOf("R") == -1) {
+                            System.out.println(" Enter Room Code (Wildcard Expressions are okay)");
+                            roomCode = in.next();
+                            counter++;
+                            System.out.println(" Filter Saved. ");
+                            choices = choices + code;
+                        }
+                        else{
+                            System.out.println("You already filtered on Room Code.");
+                        }
                         break;
                     case "V":
-                        System.out.println(" Enter Reservation Code (Wildcard Expressions are okay)");
-                        resCode = in.next();
-                        counter++;
-                        System.out.println(" Filter Saved. ");
+                        if(choices.indexOf("V") == -1) {
+                            System.out.println(" Enter Reservation Code (Wildcard Expressions are okay)");
+                            resCode = in.next();
+                            counter++;
+                            System.out.println(" Filter Saved. ");
+                            choices = choices + code;
+                        }
+                        else{
+                            System.out.println("You already filtered on Reservation Code.");
+                        }
                         break;
                     case "E":
                         System.out.println("Will execute search now!");
