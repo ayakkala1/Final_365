@@ -21,26 +21,165 @@ public class InnReservations {
 
     private void displayOptions() {
         System.out.println("Options: ");
-        System.out.println(" Rooms and Rates");
-        System.out.println(" Reserve a room");
-        System.out.println(" Change a reservation");
-        System.out.println(" Cancel a reservation");
-        System.out.println(" Reservation detail");
-        System.out.println(" Revenue");
+        System.out.println(" 1. Rooms and Rates");
+        System.out.println(" 2. Reserve a room");
+        System.out.println(" 3. Change a reservation");
+        System.out.println(" 4. Cancel a reservation");
+        System.out.println(" 5. Reservation detail");
+        System.out.println(" 6. Revenue");
     }
 
-    private void executeInput(String userInput) {
-        if (userInput.equals("Reserve a room")) {
+    private void executeInput(String userInput, Scanner in) {
+        if (userInput.equals("Reserve a room") || userInput.equals("2")) {
             reserveARoom();
         }
-        else if (userInput.equals("Rooms and Rates")){
+        else if (userInput.equals("Rooms and Rates") || userInput.equals("1")){
             roomRates();
         }
-        else if (userInput.equals("Cancel a reservation")){
-            cancel();
+        else if (userInput.equals("Cancel a reservation") || userInput.equals("4")){
+            cancel(in);
+        }
+        else if (userInput.equals("Reservation detail") || userInput.equals("5")){
+            filter(in);
         }
     }
+    private void filter(Scanner in){
+        try {
+            int FIRST_NAME_POS = 1;
+            int LAST_NAME_POS = 2;
+            int START_DATE_POS = 3;
+            int END_DATE_POS = 4;
+            int START_DATE_POS_2 = 5;
+            int END_DATE_POS_2 = 6;
+            int RES_CODE_POS = 7;
+            int ROOM_CODE_POS = 8;
+            int COUNTER_POS = 9;
 
+            boolean oneFilter = false;
+            String firstName = " ";
+            String lastName = " ";
+            Date startDate = Date.valueOf("2900-11-09");
+            Date endDate =  Date.valueOf("2900-11-09");
+            String resCode = " ";
+            String roomCode = " ";
+
+            //Scanner in = new Scanner(System.in);
+
+            PreparedStatement pstmt = conn.prepareStatement("SELECT CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids, RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor FROM ( " +
+                    "SELECT *,COUNT(*) OVER (PARTITION BY CODE) counts FROM ( " +
+                    "SELECT * FROM lab7_reservations v " +
+                    " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
+                    "WHERE FIrstName LIKE ? " +
+                    "UNION ALL " +
+                    "SELECT * FROM lab7_reservations v " +
+                    " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
+                    "WHERE LastName LIKE ? " +
+                    "UNION ALL " +
+                    "SELECT * FROM lab7_reservations v " +
+                    " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
+                    "WHERE (CheckIn BETWEEN ? and ?) or (Checkout BETWEEN ? and ?) " +
+                    "UNION ALL " +
+                    "SELECT * FROM lab7_reservations v " +
+                    " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
+                    "WHERE CODE LIKE ? " +
+                    "UNION ALL " +
+                    "SELECT * FROM lab7_reservations v " +
+                    " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
+                    "WHERE Room LIKE ? " +
+                    ") t " +
+                    ") counttable " +
+                    "WHERE counts = ?;");
+
+            int counter = 0;
+            System.out.println("Choose a filter: " +
+                    "- First Name (enter F) " +
+                    "- Last Name (enter L) " +
+                    "- Date (enter D) " +
+                    "- Room Code (enter R) " +
+                    "- Reservation Code (enter V) " +
+                    "- Execute (enter E)");
+
+            String code = in.next();
+            String line = in.nextLine();
+
+            boolean breakCase = false;
+            while (counter <= 5) {
+                if (line.length() > 1) {
+                    code = "chicken";
+                }
+                switch (code) {
+                    case "F":
+                        System.out.println(" Enter First Name (Wildcard Expressions are okay)");
+                        firstName = in.next();
+                        counter++;
+                        System.out.println(" Filter Saved. ");                        break;
+                    case "L":
+                        System.out.println(" Enter Last Name (Wildcard Expressions are okay)");
+                        lastName = in.next();
+                        counter++;
+                        System.out.println(" Filter Saved. ");
+                        break;
+                    case "D":
+                        System.out.println(" Enter Start Date | Format: Year-Month-Day");
+                        startDate = Date.valueOf(in.next());
+                        System.out.println(" Enter End Date | Format: Year-Month-Day");
+                        endDate = Date.valueOf(in.next());
+                        System.out.println(" Filter Saved. ");
+                        counter++;
+                        break;
+                    case "R":
+                        System.out.println(" Enter Room Code (Wildcard Expressions are okay)");
+                        roomCode = in.next();
+                        counter++;
+                        System.out.println(" Filter Saved. ");
+                        break;
+                    case "V":
+                        System.out.println(" Enter Reservation Code (Wildcard Expressions are okay)");
+                        resCode = in.next();
+                        counter++;
+                        System.out.println(" Filter Saved. ");                        break;
+                    case "E":
+                        System.out.println("Will execute search now!");
+                        breakCase = true;
+                        break;
+                    default:
+                        System.out.println("Not a valid input!");
+                }
+                if(breakCase){
+                    break;
+                }
+                code = in.next();
+                if (in.hasNextLine()) {
+                    line = in.nextLine();
+                }
+            }
+            pstmt.setString(FIRST_NAME_POS,firstName);
+            pstmt.setString(LAST_NAME_POS,lastName);
+            pstmt.setDate(START_DATE_POS,startDate);
+            pstmt.setDate(END_DATE_POS,endDate);
+            pstmt.setDate(START_DATE_POS_2,startDate);
+            pstmt.setDate(END_DATE_POS_2,endDate);
+            pstmt.setString(ROOM_CODE_POS,roomCode);
+            pstmt.setString(RES_CODE_POS,resCode);
+            pstmt.setInt(COUNTER_POS,counter);
+
+
+            if (counter == 5){
+                System.out.println("All filters have been used, will execute search now!");
+            }
+            else if (counter == 0){
+                System.out.println("You gave no filters, no search will be executed.");
+            }
+            else{
+                ResultSet rs = pstmt.executeQuery();
+                DBTablePrinter.printResultSet(rs);
+            }
+        }
+        catch(Exception e){
+            System.out.println("An error has occurred.");
+        }
+    }
+    
     private void reserveARoom() {
         Scanner reader = new Scanner(System.in); // Reading from System.in
         System.out.print("First name: ");
@@ -72,10 +211,10 @@ public class InnReservations {
         System.out.println(numAdults);
 
     }
-    private void cancel(){
+    private void cancel(Scanner in){
         try{
         PreparedStatement pstmt = conn.prepareStatement("DELETE FROM lab7_reservations WHERE CODE = ?");
-        Scanner in = new Scanner(System.in);
+        //Scanner in = new Scanner(System.in);
         System.out.println("Give the code for the reservation you wish to cancel: ");
         Integer code = Integer.parseInt(in.next());
         System.out.println("Are you sure you want to cancel this Reservation? (Yes | No)");
@@ -172,7 +311,8 @@ public class InnReservations {
                     "  GROUP BY Room,RoomName " +
                     ") AS r1 ");
             System.out.println("");
-            ResultSetMetaData rsmd = rs.getMetaData();
+            DBTablePrinter.printResultSet(rs);
+          /*  ResultSetMetaData rsmd = rs.getMetaData();
             System.out.println("================================================================================================================================================================================================");
             System.out.format("|| %4s | %30s | %12s | %12s | %12s | %17s | %4s | %10s | %7s | %7s | %12s | %24s ||%n", rsmd.getColumnName(1),
                     rsmd.getColumnName(2), rsmd.getColumnName(3),rsmd.getColumnName(4),rsmd.getColumnName(5),rsmd.getColumnName(6),
@@ -194,11 +334,32 @@ public class InnReservations {
                 Double proportion_last_180_days = rs.getDouble("proportion_last_180_days");
                 System.out.format("|| %4s | %30s | %12s | %12s | %12s | %17s | %4s | %10s | %7s | $%8.2f | %12s | %23.2f  ||%n", Room, RoomName, lastCheckIn,lastCheckOut,recentLength,nextAvailability,Beds,bedType,maxOcc,basePrice,decor, proportion_last_180_days);
             }
-            System.out.println("================================================================================================================================================================================================");
+            System.out.println("================================================================================================================================================================================================");*/
             return;
         }
         catch(Exception e){
             System.out.println("Error has occurred!");
+        }
+    }
+    final private static void printResultSet(ResultSet rs) throws SQLException {
+
+        // Prepare metadata object and get the number of columns.
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+
+        // Print column names (a header).
+        for (int i = 1; i <= columnsNumber; i++) {
+            if (i > 1) System.out.print(" | ");
+            System.out.print(rsmd.getColumnName(i));
+        }
+        System.out.println("");
+
+        while (rs.next()) {
+            for (int i = 1; i <= columnsNumber; i++) {
+                if (i > 1) System.out.print(" | ");
+                System.out.print(rs.getString(i));
+            }
+            System.out.println("");
         }
     }
 
@@ -211,7 +372,9 @@ public class InnReservations {
         Scanner reader = new Scanner(System.in); // Reading from System.in
         System.out.print("Enter an option: ");
         String userInput = reader.nextLine(); // Scans the next token of the input as an int.
-        executeInput(userInput);
+
+        //ExecuteInput takes in reader to allow bash script to read in text files without errors
+        executeInput(userInput, reader);
         reader.close();
     }
 
