@@ -91,12 +91,12 @@ public class InnReservations {
                     "WHERE counts = ?;");
 
             int counter = 0;
-            System.out.println("Choose a filter: " +
-                    "- First Name (enter F) " +
-                    "- Last Name (enter L) " +
-                    "- Date (enter D) " +
-                    "- Room Code (enter R) " +
-                    "- Reservation Code (enter V) " +
+            System.out.println("Choose a filter:\n" +
+                    "- First Name (enter F)\n" +
+                    "- Last Name (enter L)\n" +
+                    "- Date (enter D)\n" +
+                    "- Room Code (enter R)\n" +
+                    "- Reservation Code (enter V)\n" +
                     "- Execute (enter E)");
 
             String code = in.next();
