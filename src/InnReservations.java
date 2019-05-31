@@ -65,7 +65,7 @@ public class InnReservations {
 
             //Scanner in = new Scanner(System.in);
 
-            PreparedStatement pstmt = conn.prepareStatement("SELECT CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids, RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor FROM ( " +
+            PreparedStatement pstmt = conn.prepareStatement("SELECT DISTINCT CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids, RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor FROM ( " +
                     "SELECT *,COUNT(*) OVER (PARTITION BY CODE) counts FROM ( " +
                     "SELECT * FROM lab7_reservations v " +
                     " INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) " +
