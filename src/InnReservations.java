@@ -55,7 +55,6 @@ public class InnReservations {
             int ROOM_CODE_POS = 8;
             int COUNTER_POS = 9;
 
-            boolean oneFilter = false;
             String firstName = " ";
             String lastName = " ";
             Date startDate = Date.valueOf("2900-11-09");
@@ -112,7 +111,8 @@ public class InnReservations {
                         System.out.println(" Enter First Name (Wildcard Expressions are okay)");
                         firstName = in.next();
                         counter++;
-                        System.out.println(" Filter Saved. ");                        break;
+                        System.out.println(" Filter Saved. ");
+                        break;
                     case "L":
                         System.out.println(" Enter Last Name (Wildcard Expressions are okay)");
                         lastName = in.next();
@@ -137,7 +137,8 @@ public class InnReservations {
                         System.out.println(" Enter Reservation Code (Wildcard Expressions are okay)");
                         resCode = in.next();
                         counter++;
-                        System.out.println(" Filter Saved. ");                        break;
+                        System.out.println(" Filter Saved. ");
+                        break;
                     case "E":
                         System.out.println("Will execute search now!");
                         breakCase = true;
