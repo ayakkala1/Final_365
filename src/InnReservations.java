@@ -130,7 +130,7 @@ public class InnReservations {
                     "- Reservation Code (enter V)\n" +
                     "- Execute (enter E)");
 
-            String code = in.next();
+            String code = in.next().toUpperCase();
             String line = in.nextLine();
             String choices = "";
 
@@ -219,7 +219,7 @@ public class InnReservations {
                 if (breakCase) {
                     break;
                 }
-                code = in.next();
+                code = in.next().toUpperCase();
                 if (in.hasNextLine()) {
                     line = in.nextLine();
                 }
