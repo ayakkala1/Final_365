@@ -1,4 +1,4 @@
 *.txt
-*.xml
+libraries/*.xml
 *.sh
-*.class
+src/*.class
