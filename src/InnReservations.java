@@ -382,21 +382,22 @@ public class InnReservations {
     private void change(Scanner reader) {
         System.out.print("Enter reservation code: ");
         int code = reader.nextInt();
+        // Check if the given code exists
         String query = "SELECT EXISTS (SELECT * FROM lab7_reservations WHERE CODE = ?) AS CodeExists";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(query);
             pstmt.setInt(1, code);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                rs.next();
-                int res = rs.getInt("CodeExists");
-                if (res == 0) {
-                    System.out.println("Invalid room code");
-                    return;
-                }
-            } catch (SQLException e) {
-                System.out.println(e);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            int res = rs.getInt("CodeExists");
+            if (res == 0) {
+                System.out.println("Invalid room code");
+                return;
             }
         } catch (SQLException e) {
             System.out.println(e);
+            System.out.println("An error has occurred");
+            return;
         }
         reader.nextLine();
         System.out.println("Enter the new value to set (or leave blank to leave unchanged)");
@@ -404,26 +405,61 @@ public class InnReservations {
         String first = reader.nextLine();
         System.out.print("Last name: ");
         String last = reader.nextLine();
+
+        Date begin, end;
         try {
-            System.out.print("Begin date: ");
+            PreparedStatement pstmt = conn.prepareStatement("SELECT CheckIn, CheckOut FROM lab7_reservations WHERE CODE = ?");
+            pstmt.setInt(1, code);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            begin = rs.getDate("CheckIn");
+            end = rs.getDate("CheckOut");
+
+            System.out.print("Begin date (YYYY-MM-DD): ");
             String beginStr = reader.nextLine();
             if (!beginStr.equals("")) {
-                Date begin = valueOf(beginStr);
+                begin = valueOf(beginStr);
             }
-            System.out.print("End date: ");
+            System.out.print("End date (YYYY-MM-DD): ");
             String endStr = reader.nextLine();
             if (!endStr.equals("")) {
-                Date end = valueOf(beginStr);
+                end = valueOf(beginStr);
+            }
+            if (begin.compareTo(end) >= 0) {
+                System.out.println("CheckIn cannot be before CheckOut");
+                return;
             }
         } catch (Exception e) {
             System.out.println("Invalid date format");
             return;
         }
-        System.out.print("Number of children: ");
+
+        System.out.print("Number of children (-1 to leave unchanged):");
         int children = reader.nextInt();
-        System.out.print("Number of adults: ");
+        System.out.print("Number of adults (-1 to leave unchanged): ");
         int adults = reader.nextInt();
+
+        String setStr = "UPDATE lab7_reservations" +
+                            "SET ? = ?" +
+                            "WHERE CODE = ?";
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(setStr);
+            pstmt.setInt(3, code);
+            if (!first.equals("")) {
+                pstmt.setString(1, "FirstName");
+                pstmt.setString(2, first);
+                pstmt.executeUpdate();
+            }
+            if (!last.equals("")) {
+                pstmt.setString(1, "LastName");
+                pstmt.setString(2, last);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.out.println("An error has occurred");
+        }
     }
+
 
 
     final private static void printResultSet(ResultSet rs) throws SQLException {
