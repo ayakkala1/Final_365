@@ -166,12 +166,6 @@ public class InnReservations {
                         }
                         break;
                     case "D":
-                        System.out.println(" Enter Start Date | Format: Year-Month-Day");
-                        startDate = valueOf(in.next());
-                        System.out.println(" Enter End Date | Format: Year-Month-Day");
-                        endDate = valueOf(in.next());
-                        System.out.println(" Filter Saved. ");
-                        counter++;
                         if(choices.indexOf("D") == -1) {
                             System.out.println(" Enter Start Date | Format: Year-Month-Day");
                             startDate = Date.valueOf(in.next());
