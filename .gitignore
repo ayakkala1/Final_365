@@ -1,4 +1,12 @@
-*.txt
-*.xml
-*.sh
-*.class
+*/*
+*.*
+
+!*.sql
+!*.pdf
+!/*.java
+!/*.txt
+!/*.jar
+!.gitignore
+
+
+
