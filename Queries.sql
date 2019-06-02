@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-SELECT DISTINCT RoomCode, bedType, maxOcc, basePrice, RoomName, ROUND(((((DATEDIFF('2020-01-02', '2019-12-31')) - ((WEEK('2020-01-02') + ((YEAR('2020-01-02') - YEAR('2019-12-31')) * 52) - WEEK('2019-12-31')) * 2) - (CASE WHEN WEEKDAY('2020-01-02') = 6 THEN 1 ELSE 0 END) - (CASE WHEN WEEKDAY('2019-12-31') = 5 THEN 1 ELSE 0 END)) * basePrice) + (((DATEDIFF('2020-01-02', '2019-12-31')) - ((WEEK('2020-01-02') + ((YEAR('2020-01-02') - YEAR('2019-12-31')) * 52) - WEEK('2019-12-31')) * 2) - (CASE WHEN WEEKDAY('2020-01-02') = 6 THEN 0 ELSE 1 END) - (CASE WHEN WEEKDAY('2019-12-31') = 5 THEN 0 ELSE 1 END)) * basePrice * 1.1)) * 1.18, 2) AS TotalCost
-FROM lab7_rooms 
-INNER JOIN lab7_reservations ON RoomCode = room 
-WHERE RoomCode LIKE ('%%') AND 
-(bedType LIKE ('%%') AND maxOcc >= 2 AND CheckOut <= '2019-12-31' OR CheckIn >= '2020-01-02');
-=======
-use nstapp;
-
 -- R1
 
 # May want to check edge case of collisions in future
@@ -80,4 +71,3 @@ NATURAL JOIN
 			INNER JOIN lab7_rooms r on (v.Room = r.RoomCode)
 		GROUP BY Room,RoomName
 ) AS r1 
->>>>>>> 5a2bacc717075a0ce68692e1604f062c267ee106
