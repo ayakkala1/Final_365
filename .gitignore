@@ -1,2 +1,15 @@
+<<<<<<< HEAD
 src/*.class
 *.sql
+=======
+*/*
+*.*
+
+!*.sql
+!*.pdf
+!/*.xml
+!/*.java
+!/*.txt
+!/*.jar
+!.gitignore
+>>>>>>> eb98bff8a986e9399c7925b2c2217bbabc82127c
