@@ -8,9 +8,9 @@ public class InnReservations {
     PreparedStatement reserveRoom;
 
     public InnReservations() {
-        String URL = "jdbc:mysql://db.labthreesixfive.com/nstapp?autoReconnect=true";
-        String USER = "nstapp";
-        String PASS = "S19_CSC-365-014333757";
+        String URL = System.getenv("LAB_URL");
+        String USER = System.getenv("LAB_USER");
+        String PASS = System.getenv("LAB_PASS");
         try {
             conn = DriverManager.getConnection(URL, USER, PASS);
             System.out.println("Connected!");
