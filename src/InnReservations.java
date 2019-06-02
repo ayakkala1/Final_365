@@ -1,6 +1,5 @@
 import java.util.Scanner;
 import java.sql.*;
-import java.math.*;
 
 import static java.sql.Date.valueOf;
 
@@ -43,7 +42,37 @@ public class InnReservations {
         } else if (userInput.equals("Change a reservation") || userInput.equals("3")) {
             change(in);
         }
-
+        else if (userInput.equals("Revenue") || userInput.equals("6")){
+            revenue();
+        }
+    }
+    private void revenue(){
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("" +
+                    "SELECT Room, " +
+                    "   ROUND(SUM(case when MONTH(Checkout) = 1 then DATEDIFF(Checkout,Checkin) * Rate end),2)  AS January, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 2 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS February, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 3 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS March, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 4 then DATEDIFF(Checkout,Checkin) * Rate end),2)  AS April, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 5 then DATEDIFF(Checkout,Checkin) * Rate  end),2)  AS May, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 6 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS June, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 7 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS July, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 8 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS August, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 9 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS September, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 10 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS October, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 11 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS November, " +
+                    "       ROUND(SUM(case when MONTH(Checkout) = 12 then DATEDIFF(Checkout,Checkin) * Rate end),2)   AS December, " +
+                    "       ROUND(SUM(DATEDIFF(Checkout,Checkin) * Rate),2)  AS TOTAL " +
+                    "       FROM lab7_reservations " +
+                    "GROUP BY Room");
+            DBTablePrinter.printResultSet(rs);
+            return;
+        }
+        catch(Exception e){
+            System.out.println("An error has occurred.");
+            return;
+        }
     }
 
     private void filter(Scanner in) {
@@ -101,7 +130,7 @@ public class InnReservations {
                     "- Reservation Code (enter V)\n" +
                     "- Execute (enter E)");
 
-            String code = in.next();
+            String code = in.next().toUpperCase();
             String line = in.nextLine();
             String choices = "";
 
@@ -190,7 +219,7 @@ public class InnReservations {
                 if (breakCase) {
                     break;
                 }
-                code = in.next();
+                code = in.next().toUpperCase();
                 if (in.hasNextLine()) {
                     line = in.nextLine();
                 }
@@ -500,3 +529,4 @@ public class InnReservations {
     }
 
 }
+
