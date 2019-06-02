@@ -3,6 +3,7 @@
 
 !*.sql
 !*.pdf
+!*.xml
 !/*.java
 !/*.txt
 !/*.jar
