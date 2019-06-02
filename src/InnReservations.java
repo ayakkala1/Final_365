@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.sql.*;
 import java.math.*;
 
@@ -59,27 +60,46 @@ public class InnReservations {
         // Connect to the database
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
             System.out.println("Connected!");
-            String availableRoomsSql = "SELECT DISTINCT RoomCode, bedType, maxOcc, basePrice, RoomName, ROUND(((((DATEDIFF('2020-01-02', '2019-12-31')) - ((WEEK('2019-12-31') + ((YEAR('2019-12-31') - YEAR('2019-12-31')) * 52) - WEEK('2019-12-31')) * 2) - (CASE WHEN WEEKDAY('2019-12-31') = 6 THEN 1 ELSE 0 END) - (CASE WHEN WEEKDAY('2019-12-31') = 5 THEN 1 ELSE 0 END)) * basePrice) + (((DATEDIFF('2020-01-02', '2019-12-31')) - ((WEEK('2019-12-31') + ((YEAR('2019-12-31') - YEAR('2019-12-31')) * 52) - WEEK('2019-12-31')) * 2) - (CASE WHEN WEEKDAY('2019-12-31') = 6 THEN 0 ELSE 1 END) - (CASE WHEN WEEKDAY('2019-12-31') = 5 THEN 0 ELSE 1 END)) * basePrice * 1.1)) * 1.18, 2) AS TotalCost FROM lab7_rooms INNER JOIN lab7_reservations ON RoomCode = room "
-                    + "WHERE RoomCode LIKE (?) AND (bedType LIKE (?) AND maxOcc >= ? AND CheckOut <= ? OR CheckIn >= ?)";
+            // SQL query for finding available reservations
+            String availableRoomsSql = "SELECT DISTINCT RoomCode, bedType, maxOcc, basePrice, RoomName, ROUND(((((DATEDIFF(?, ?)) - ((WEEK(?) + ((YEAR(?) - YEAR(?)) * 52) - WEEK(?)) * 2) - (CASE WHEN WEEKDAY(?) = 6 THEN 1 ELSE 0 END) - (CASE WHEN WEEKDAY(?) = 5 THEN 1 ELSE 0 END)) * basePrice) + (((DATEDIFF(?, ?)) - ((WEEK(?) + ((YEAR(?) - YEAR(?)) * 52) - WEEK(?)) * 2) - (CASE WHEN WEEKDAY(?) = 6 THEN 0 ELSE 1 END) - (CASE WHEN WEEKDAY(?) = 5 THEN 0 ELSE 1 END)) * basePrice * 1.1)) * 1.18, 2) AS TotalCost FROM lab7_rooms "
+                    + "WHERE RoomCode LIKE (?) AND (bedType LIKE (?) AND maxOcc >= ? AND RoomCode NOT IN (SELECT Room FROM lab7_reservations WHERE ? < CheckOut AND ? > CheckIn))";
 
             // Prepare SQL statement to fetch matching rooms
             try (PreparedStatement availableRoomsStatement = conn.prepareStatement(availableRoomsSql)) {
+                // Set correct dates for calculating total cost
+                availableRoomsStatement.setDate(1, java.sql.Date.valueOf(checkOut));
+                availableRoomsStatement.setDate(2, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(3, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(4, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(5, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(6, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(7, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(8, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(9, java.sql.Date.valueOf(checkOut));
+                availableRoomsStatement.setDate(10, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(11, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(12, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(13, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(14, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(15, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(16, java.sql.Date.valueOf(checkIn));
+
                 // All rooms are matching if user inputted "Any"
                 if (roomCode.equals("Any")) {
-                    availableRoomsStatement.setString(1, "%%");
+                    availableRoomsStatement.setString(17, "%%");
                 } else {
-                    availableRoomsStatement.setString(1, roomCode);
+                    availableRoomsStatement.setString(17, roomCode);
                 }
                 // All bed types are matching if user inputted "any"
                 if (bedType.equals("Any")) {
-                    availableRoomsStatement.setString(2, "%%");
+                    availableRoomsStatement.setString(18, "%%");
                 } else {
-                    availableRoomsStatement.setString(2, bedType);
+                    availableRoomsStatement.setString(18, bedType);
                 }
 
-                availableRoomsStatement.setInt(3, numChildren + numAdults);
-                availableRoomsStatement.setDate(4, java.sql.Date.valueOf(checkIn));
-                availableRoomsStatement.setDate(5, java.sql.Date.valueOf(checkOut));
+                availableRoomsStatement.setInt(19, numChildren + numAdults);
+                availableRoomsStatement.setDate(20, java.sql.Date.valueOf(checkIn));
+                availableRoomsStatement.setDate(21, java.sql.Date.valueOf(checkOut));
 
                 System.out.println(availableRoomsStatement);
 
@@ -112,7 +132,8 @@ public class InnReservations {
                     Integer optionChosen = reader.nextInt();
                     reader.nextLine();
                     // Get the data for the chosen option
-                    Map<String, Object> chosenRoom = roomList.get(optionChosen);
+                    Map<String, Object> chosenRoom = roomList.get(optionChosen - 1);
+                    System.out.println(chosenRoom);
                     // Display a confirmation page for the reservation
                     System.out.println(
                             "===========================================================================================");
@@ -127,14 +148,45 @@ public class InnReservations {
                     if (confirmed.equals("No")) {
                         return;
                     } else {
-                        System.out.println("Confirmed!");
+                        String addReservationSQL = "INSERT INTO lab7_reservations (CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                        try (PreparedStatement addReservationStatement = conn.prepareStatement(addReservationSQL)) {
+                            Random random = new Random();
+                            // Set the reservation ID
+                            addReservationStatement.setInt(1, random.nextInt(200000));
+                            addReservationStatement.setString(2, (String) chosenRoom.get("RoomCode"));
+                            addReservationStatement.setDate(3, java.sql.Date.valueOf(checkIn));
+                            addReservationStatement.setDate(4, java.sql.Date.valueOf(checkOut));
+                            addReservationStatement.setBigDecimal(5, (BigDecimal) chosenRoom.get("TotalCost"));
+                            addReservationStatement.setString(6, lastName);
+                            addReservationStatement.setString(7, firstName);
+                            addReservationStatement.setInt(8, numAdults);
+                            addReservationStatement.setInt(9, numChildren);
+
+                            System.out.println(addReservationStatement);
+
+                            try {
+                                addReservationStatement.executeUpdate();
+                                System.out.println("Confirmed!");
+
+                            } catch (SQLException error) {
+                                System.out.println(error);
+                                System.out.println("Error! Reservation not made");
+                            }
+
+                        } catch (SQLException error) {
+                            System.out.println(error);
+                            System.out.println("Bad insert prepare!");
+                        }
+
                     }
 
                 } catch (SQLException error) {
                     System.out.println(error);
-                    System.out.println("Bad query!");
+                    System.out.println("Bad fetch!");
                 }
             } catch (SQLException error) {
+                System.out.println(error);
                 System.out.println("Bad prepare!");
             }
         } catch (SQLException error) {
