@@ -463,7 +463,28 @@ public class InnReservations {
             return;
         }
 
-        System.out.print("Number of children (-1 to leave unchanged):");
+        /*
+        from stackoverflow: checking for date overlapping
+        SELECT * FROM tbl WHERE
+            existing_start BETWEEN $newStart AND $newEnd OR
+            $newStart BETWEEN existing_start AND existing_end
+         */
+        try {
+            PreparedStatement pstmt = conn.prepareStatement("SELECT EXISTS ( SELECT * FROM lab7_reservations WHERE" +
+                    "CheckIn BETWEEN ? AND ? OR ? BETWEEN CheckIn and CheckOut )");
+            pstmt.setDate(1, begin);
+            pstmt.setDate(2, end);
+            pstmt.setDate(3, begin);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            if (rs.getInt(1) == 1) {
+                System.out.println("Reservation overlaps with existing reservation");
+                return;
+            }
+        } catch (SQLException e) {
+            System.out.println("An error occurred");
+        }
+        System.out.print("Number of kids (-1 to leave unchanged):");
         int children = reader.nextInt();
         System.out.print("Number of adults (-1 to leave unchanged): ");
         int adults = reader.nextInt();
@@ -484,9 +505,30 @@ public class InnReservations {
                 pstmt.setString(2, last);
                 pstmt.executeUpdate();
             }
+            // Always sets date even if unchanged
+            pstmt.setString(1, "CheckIn");
+            pstmt.setDate(2, begin);
+            pstmt.executeUpdate();
+
+            pstmt.setString(1, "CheckOut");
+            pstmt.setDate(2, end);
+            pstmt.executeUpdate();
+
+            if (adults != -1) {
+                pstmt.setString(1, "Adults");
+                pstmt.setInt(2, adults);
+                pstmt.executeUpdate();
+            }
+
+            if (children != -1) {
+                pstmt.setString(1, "Kids");
+                pstmt.setInt(2, children);
+                pstmt.executeUpdate();
+            }
         } catch (SQLException e) {
             System.out.println("An error has occurred");
         }
+        System.out.println("Update completed successfully"g);
     }
 
 
