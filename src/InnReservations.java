@@ -475,12 +475,14 @@ public class InnReservations {
          */
         try {
             PreparedStatement pstmt = conn.prepareStatement("SELECT EXISTS ( SELECT * FROM lab7_reservations WHERE" +
-                    "(CheckIn BETWEEN ? AND ? OR ? BETWEEN CheckIn AND CheckOut) AND CODE != ? AND Room = ?)");
+                    "((CheckIn >= ? AND CheckIn < ?) OR (? >= CheckIn AND ? < CheckOut))" +
+                    "AND CODE != ? AND Room = ?)");
             pstmt.setDate(1, begin);
             pstmt.setDate(2, end);
             pstmt.setDate(3, begin);
-            pstmt.setInt(4, code);
-            pstmt.setString(5, roomCode);
+            pstmt.setDate(4, begin);
+            pstmt.setInt(5, code);
+            pstmt.setString(6, roomCode);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
             if (rs.getInt(1) == 1) {
