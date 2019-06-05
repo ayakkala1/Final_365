@@ -247,6 +247,7 @@ public class InnReservations {
         Integer numChildren = reader.nextInt();
         System.out.print("Number of adults: ");
         Integer numAdults = reader.nextInt();
+        reader.nextLine();
 
         String checkMaxOccSql = "SELECT RoomCode FROM lab7_rooms WHERE maxOcc >= ?";
 
@@ -316,13 +317,6 @@ public class InnReservations {
                 availableRoomsStatement.setDate(23, java.sql.Date.valueOf(checkOut));
                 availableRooms = availableRoomsStatement.executeQuery();
 
-                // Execute the SQL query
-                // try {
-                // availableRooms = availableRoomsStatement.executeQuery();
-                // } catch (SQLException error) {
-                // System.out.println(error);
-                // System.out.println("Bad available fetch!");
-                // }
                 if (availableRooms.next() == false) {
                     noRoomsAvailable = true;
                 }
@@ -371,9 +365,6 @@ public class InnReservations {
                         + "           , 2) AS proportion_last_180_days " + "  FROM lab7_reservations v "
                         + "   INNER JOIN lab7_rooms r on (v.Room = r.RoomCode) "
                         + " GROUP BY Room,RoomName) AS r1 WHERE maxOcc >= ? AND Room NOT IN (SELECT room FROM lab7_reservations WHERE nextAvailability < checkOut AND DATE_ADD(nextAvailability, INTERVAL DATEDIFF(?, ?) DAY) > checkIn) LIMIT 5;";
-                // + ") AS r1 WHERE NOT EXISTS (SELECT 1 FROM lab7_rooms WHERE Room LIKE
-                // (\'%%\') AND (bedType LIKE (\'%%\') AND maxOcc >= ? AND Room NOT IN (SELECT
-                // Room FROM lab7_reservations WHERE ? < checkOut AND ? > checkIn)));";
 
                 try {
                     availableRoomsStatement = conn.prepareStatement(similarAvailableRoomsSQL);
@@ -418,35 +409,7 @@ public class InnReservations {
                     availableRoomsStatement.setDate(37, java.sql.Date.valueOf(checkOut));
                     availableRoomsStatement.setDate(38, java.sql.Date.valueOf(checkIn));
 
-                    // similarAvailableRoomsStatement.setInt(34, numChildren + numAdults);
-                    // similarAvailableRoomsStatement.setDate(35, java.sql.Date.valueOf(checkIn));
-                    // similarAvailableRoomsStatement.setDate(36, java.sql.Date.valueOf(checkOut));
                     availableRooms = availableRoomsStatement.executeQuery();
-                    // while (availableRooms.next()) {
-                    // // Add the row's data to the list
-                    // // Map<String, Object> row = new HashMap<>(columns);
-                    // // for (int i = 1; i <= columns; ++i) {
-                    // // row.put(metaData.getColumnName(i), availableRooms.getObject(i));
-                    // // }
-                    // // roomList.add(row);
-                    // // Display the roomcode, bedtype, and maximum occupancy of each option
-                    // String availableRoomCode = availableRooms.getString("RoomCode");
-                    // String availableBedType = availableRooms.getString("bedType");
-                    // String availableOcc = availableRooms.getString("maxOcc");
-                    // String availableIn = availableRooms.getString("checkIn");
-                    // // String availableOut = availableRooms.getString("checkout");
-                    // System.out.format("%s %s %s %s %s\n", availableRoomCode, availableBedType,
-                    // availableOcc,
-                    // availableIn, checkOut);
-                    // // option++;
-                    // }
-                    // try {
-                    // availableRooms = similarAvailableRoomsStatement.executeQuery();
-                    // System.out.println("AFTER SIMILAR");
-                    // } catch (SQLException error) {
-                    // System.out.println(error);
-                    // System.out.println("Bad similar fetch!");
-                    // }
                 } catch (SQLException error) {
                     System.out.println(error);
                     System.out.println("Bad similar!");
@@ -484,57 +447,68 @@ public class InnReservations {
                 System.out.println(
                         "===========================================================================================");
                 // Get the desired option
-                System.out.print("Option: ");
-                Integer optionChosen = reader.nextInt();
-                reader.nextLine();
-                // Get the data for the chosen option
-                Map<String, Object> chosenRoom = roomList.get(optionChosen - 1);
-                System.out.println(chosenRoom);
-                // Display a confirmation page for the reservation
-                System.out.println(
-                        "===========================================================================================");
-                System.out.format("|| %s | %s | %s | %s | %s | %s | %d | %d | %.2f ||%n", firstName + " " + lastName,
-                        chosenRoom.get("RoomCode"), chosenRoom.get("RoomName"), chosenRoom.get("bedType"),
-                        chosenRoom.get("checkIn"), chosenRoom.get("checkOut"), numAdults, numChildren,
-                        chosenRoom.get("TotalCost"));
-                System.out.println(
-                        "===========================================================================================");
-                System.out.print("Confirm? (Yes/No): ");
-                String confirmed = reader.nextLine();
-                if (confirmed.equals("No")) {
-                    return;
-                } else {
-                    String addReservationSQL = "INSERT INTO lab7_reservations (CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                System.out.print("Option (type Cancel to cancel): ");
+                String optionChosen = reader.nextLine();
+                boolean validOption = true;
 
-                    try (PreparedStatement addReservationStatement = conn.prepareStatement(addReservationSQL)) {
-                        Random random = new Random();
-                        // Set the reservation ID
-                        addReservationStatement.setInt(1, random.nextInt(200000));
-                        addReservationStatement.setString(2, (String) chosenRoom.get("RoomCode"));
-                        addReservationStatement.setDate(3, java.sql.Date.valueOf((String) chosenRoom.get("checkIn")));
-                        addReservationStatement.setDate(4, java.sql.Date.valueOf((String) chosenRoom.get("checkOut")));
-                        addReservationStatement.setBigDecimal(5, (BigDecimal) chosenRoom.get("TotalCost"));
-                        addReservationStatement.setString(6, lastName);
-                        addReservationStatement.setString(7, firstName);
-                        addReservationStatement.setInt(8, numAdults);
-                        addReservationStatement.setInt(9, numChildren);
+                try {
+                    Integer.parseInt(optionChosen);
+                } catch (NumberFormatException e) {
 
-                        System.out.println(addReservationStatement);
+                    validOption = false;
+                }
+                // The chosen option is valid
+                if (validOption && Integer.parseInt(optionChosen) < roomList.size()) {
+                    // Get the data for the chosen option
+                    Map<String, Object> chosenRoom = roomList.get(Integer.parseInt(optionChosen) - 1);
+                    // Display a confirmation page for the reservation
+                    System.out.println(
+                            "===========================================================================================");
+                    System.out.format("|| %s | %s | %s | %s | %s | %s | %d | %d | %.2f ||%n",
+                            firstName + " " + lastName, chosenRoom.get("RoomCode"), chosenRoom.get("RoomName"),
+                            chosenRoom.get("bedType"), chosenRoom.get("checkIn"), chosenRoom.get("checkOut"), numAdults,
+                            numChildren, chosenRoom.get("TotalCost"));
+                    System.out.println(
+                            "===========================================================================================");
+                    System.out.print("Confirm? (Yes/No): ");
+                    String confirmed = reader.nextLine();
+                    if (confirmed.equals("No")) {
+                        return;
+                    } else {
+                        String addReservationSQL = "INSERT INTO lab7_reservations (CODE, Room, CheckIn, Checkout, Rate, LastName, FirstName, Adults, Kids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        try {
-                            addReservationStatement.executeUpdate();
-                            System.out.println("Confirmed!");
+                        try (PreparedStatement addReservationStatement = conn.prepareStatement(addReservationSQL)) {
+                            Random random = new Random();
+                            // Set the reservation ID
+                            addReservationStatement.setInt(1, random.nextInt(200000));
+                            addReservationStatement.setString(2, (String) chosenRoom.get("RoomCode"));
+                            addReservationStatement.setDate(3,
+                                    java.sql.Date.valueOf((String) chosenRoom.get("checkIn")));
+                            addReservationStatement.setDate(4,
+                                    java.sql.Date.valueOf((String) chosenRoom.get("checkOut")));
+                            addReservationStatement.setBigDecimal(5, (BigDecimal) chosenRoom.get("TotalCost"));
+                            addReservationStatement.setString(6, lastName);
+                            addReservationStatement.setString(7, firstName);
+                            addReservationStatement.setInt(8, numAdults);
+                            addReservationStatement.setInt(9, numChildren);
+
+                            System.out.println(addReservationStatement);
+
+                            try {
+                                addReservationStatement.executeUpdate();
+                                System.out.println("Confirmed!");
+
+                            } catch (SQLException error) {
+                                System.out.println(error);
+                                System.out.println("Error! Reservation not made");
+                            }
 
                         } catch (SQLException error) {
                             System.out.println(error);
-                            System.out.println("Error! Reservation not made");
+                            System.out.println("Bad insert prepare!");
                         }
 
-                    } catch (SQLException error) {
-                        System.out.println(error);
-                        System.out.println("Bad insert prepare!");
                     }
-
                 }
             } catch (SQLException error) {
                 System.out.println(error);
@@ -707,14 +681,18 @@ public class InnReservations {
 
     // Main loop
     private void run() {
-        displayOptions();
         Scanner reader = new Scanner(System.in); // Reading from System.in
-        System.out.print("Enter an option: ");
-        String userInput = reader.nextLine(); // Scans the next token of the input as an int.
-
-        // ExecuteInput takes in reader to allow bash script to read in text files
-        // without errors
-        executeInput(userInput, reader);
+        while (true) {
+            displayOptions();
+            System.out.print("Enter an option (type Exit to exit): ");
+            String userInput = reader.nextLine(); // Scans the next token of the input as an int.
+            if (userInput.equals("Exit")) {
+                break;
+            }
+            // ExecuteInput takes in reader to allow bash script to read in text files
+            // without errors
+            executeInput(userInput, reader);
+        }
         reader.close();
     }
 
