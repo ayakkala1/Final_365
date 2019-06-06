@@ -1,5 +1,3 @@
-use nstapp;
-
 -- R1
 
 # May want to check edge case of collisions in future
