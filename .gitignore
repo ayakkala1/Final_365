@@ -5,7 +5,6 @@ src/*.class
 
 !*.sql
 !*.pdf
-!/*.xml
 !/*.java
 !/*.txt
 !/*.jar

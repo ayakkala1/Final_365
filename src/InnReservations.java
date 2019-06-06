@@ -610,7 +610,7 @@ public class InnReservations {
                 System.out.println("Invalid room code");
                 return;
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println(e);
             System.out.println("An error has occurred");
             return;
@@ -623,6 +623,7 @@ public class InnReservations {
         String last = reader.nextLine();
 
         Date begin, end;
+        String roomCode;
         try {
             PreparedStatement pstmt = conn
                     .prepareStatement("SELECT CheckIn, CheckOut FROM lab7_reservations WHERE CODE = ?");
@@ -631,6 +632,7 @@ public class InnReservations {
             rs.next();
             begin = rs.getDate("CheckIn");
             end = rs.getDate("CheckOut");
+            roomCode = rs.getString("Room");
 
             System.out.print("Begin date (YYYY-MM-DD): ");
             String beginStr = reader.nextLine();
@@ -640,18 +642,46 @@ public class InnReservations {
             System.out.print("End date (YYYY-MM-DD): ");
             String endStr = reader.nextLine();
             if (!endStr.equals("")) {
-                end = valueOf(beginStr);
+                end = valueOf(endStr);
             }
-            if (begin.compareTo(end) >= 0) {
-                System.out.println("CheckIn cannot be before CheckOut");
+            System.out.println(begin + " " + end);
+            if (end.compareTo(begin) <= 0) {
+                System.out.println("CheckOut cannot be before CheckIn");
                 return;
             }
         } catch (Exception e) {
+            System.out.println(e);
             System.out.println("Invalid date format");
             return;
         }
 
-        System.out.print("Number of children (-1 to leave unchanged):");
+        /*
+        from stackoverflow: checking for date overlapping
+        SELECT * FROM tbl WHERE
+            existing_start BETWEEN $newStart AND $newEnd OR
+            $newStart BETWEEN existing_start AND existing_end
+         */
+        try {
+            PreparedStatement pstmt = conn.prepareStatement("SELECT EXISTS ( SELECT * FROM lab7_reservations WHERE" +
+                    "((CheckIn >= ? AND CheckIn < ?) OR (? >= CheckIn AND ? < CheckOut))" +
+                    "AND CODE != ? AND Room = ?)");
+            pstmt.setDate(1, begin);
+            pstmt.setDate(2, end);
+            pstmt.setDate(3, begin);
+            pstmt.setDate(4, begin);
+            pstmt.setInt(5, code);
+            pstmt.setString(6, roomCode);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            if (rs.getInt(1) == 1) {
+                System.out.println("Reservation overlaps with existing reservation");
+                return;
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+            return;
+        }
+        System.out.print("Number of kids (-1 to leave unchanged):");
         int children = reader.nextInt();
         System.out.print("Number of adults (-1 to leave unchanged): ");
         int adults = reader.nextInt();
@@ -670,9 +700,30 @@ public class InnReservations {
                 pstmt.setString(2, last);
                 pstmt.executeUpdate();
             }
+            // Always sets date even if unchanged
+            pstmt.setString(1, "CheckIn");
+            pstmt.setDate(2, begin);
+            pstmt.executeUpdate();
+
+            pstmt.setString(1, "CheckOut");
+            pstmt.setDate(2, end);
+            pstmt.executeUpdate();
+
+            if (adults != -1) {
+                pstmt.setString(1, "Adults");
+                pstmt.setInt(2, adults);
+                pstmt.executeUpdate();
+            }
+
+            if (children != -1) {
+                pstmt.setString(1, "Kids");
+                pstmt.setInt(2, children);
+                pstmt.executeUpdate();
+            }
         } catch (SQLException e) {
             System.out.println("An error has occurred");
         }
+        System.out.println("Update completed successfully");
     }
 
     public static void main(String args[]) {
