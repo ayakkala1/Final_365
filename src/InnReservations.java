@@ -656,15 +656,14 @@ public class InnReservations {
         }
 
         /*
-        from stackoverflow: checking for date overlapping
-        SELECT * FROM tbl WHERE
-            existing_start BETWEEN $newStart AND $newEnd OR
-            $newStart BETWEEN existing_start AND existing_end
+         * from stackoverflow: checking for date overlapping SELECT * FROM tbl WHERE
+         * existing_start BETWEEN $newStart AND $newEnd OR $newStart BETWEEN
+         * existing_start AND existing_end
          */
         try {
-            PreparedStatement pstmt = conn.prepareStatement("SELECT EXISTS ( SELECT * FROM lab7_reservations WHERE" +
-                    "((CheckIn >= ? AND CheckIn < ?) OR (? >= CheckIn AND ? < CheckOut))" +
-                    "AND CODE != ? AND Room = ?)");
+            PreparedStatement pstmt = conn.prepareStatement("SELECT EXISTS ( SELECT * FROM lab7_reservations WHERE"
+                    + "((CheckIn >= ? AND CheckIn < ?) OR (? >= CheckIn AND ? < CheckOut))"
+                    + "AND CODE != ? AND Room = ?)");
             pstmt.setDate(1, begin);
             pstmt.setDate(2, end);
             pstmt.setDate(3, begin);

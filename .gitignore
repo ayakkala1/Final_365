@@ -1,7 +1,6 @@
 src/*.class
 *.sql
 */*
-*.*
 
 !*.sql
 !*.pdf
